@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+        php-apache:
+        # Budujemy obraz na podstawie Dockerfile, dodając obsługę bazy danych poprzez mysqli
+                build:
+                        context: ./php-dockerfile
+                container_name: php-apache_serwer
+                networks:
+                        - backend
+                        - frontend
+                # Uruchamiamy dostęp na porcie 10020
+                ports:
+                        - 10020:80
+                # Montujemy wolumen ze skryptem w pliku index.php
+                volumes:
+                        - ./DocumentRoot:/var/www/html
+                # Połączenie z kontenerem mysql (niekonieczne, jako że oba kontenery należą do sieci backend)
+                links:
+                        - 'mysql'
+        mysql:
+        # Budujemy obraz na podstawie najnowszej wersji mysql
+                image: mysql:latest
+                container_name: mysql_serwer
+                networks:
+                        - backend
+                # Tworzymy wolumen dedykoany bazie danych
+                volumes:
+                        - mysqldb:/var/lib/mysql
+                # Ustawiamy porzebne zmienne środowiskowe
+                environment:
+                        TZ: "Europe/Warsaw"
+                        MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+                        MYSQL_ROOT_PASSWORD: "rootpwd"
+                        MYSQL_USER: 'testuser'
+                        MYSQL_PASSWORD: 'testpassword'
+                        MYSQL_DATABASE: 'testdb'
+                        
+volumes:
+        mysqldb:
+
+networks:
+        frontend:
+        backend:
